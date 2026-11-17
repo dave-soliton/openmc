@@ -602,7 +602,7 @@ extern "C" int openmc_nuclear_data_reaction_info(
     if (!q_value || !redundant || !center_of_mass)
       throw std::invalid_argument("Null reaction metadata output.");
     const auto& reaction = secondary_reaction(index, mt);
-    *q_value = reaction.q_value_;
+    *q_value = reaction.q_reaction_;
     *redundant = reaction.redundant_;
     *center_of_mass = reaction.scatter_in_cm_;
     return 0;

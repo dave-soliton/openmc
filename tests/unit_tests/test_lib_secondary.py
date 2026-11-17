@@ -10,7 +10,7 @@ import openmc.lib
 from openmc import exceptions
 
 
-NUCLIDES = ['H1', 'H2', 'He4', 'Li6', 'Li7', 'Be9', 'C12', 'O16',
+NUCLIDES = ['H1', 'H2', 'He4', 'Be9', 'C12', 'O16',
             'Al27', 'Fe56', 'U235', 'U238', 'Ra223']
 
 

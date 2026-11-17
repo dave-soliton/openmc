@@ -67,15 +67,15 @@ law into a tagged dictionary. These functions inspect the C++ objects used by
 transport; they do not reopen nuclear-data files or reconstruct distributions
 through the offline Python data API::
 
-    # After Model.init_lib(), with Li6 present in the model:
-    products = openmc.lib.get_reaction_products('Li6')
+    # After Model.init_lib(), with Fe56 present in the model:
+    products = openmc.lib.get_reaction_products('Fe56')
     for product in products:
         for distribution in product['distributions']:
             print(product['mt'], product['product_index'], product['particle'],
                   distribution['distribution_index'],
                   distribution['angle_energy_type'], distribution['energy_type'])
 
-    law = openmc.lib.get_emission_distribution('Li6', 51)
+    law = openmc.lib.get_emission_distribution('Fe56', 51)
     print(law['energy'])  # Native level-inelastic parameters, if present
 
 Discovery returns one dictionary per product, including ``nuclide``,
@@ -367,15 +367,12 @@ collision, choose product applicability, apply thermal target motion or convert
 the product frame to laboratory directions. Calls require loaded data, must be
 serialized, and are rejected during batches. Correlated laws are rejected.
 
-Run ``examples/runtime_angular_distribution.py --inventory`` for representative
-native laws, checks of every angular table in the requested nuclides, and Li6
-elastic sampling validation. Use ``--mt 24`` for the non-elastic Li6 example.
-For joint laws use, for example, ``--nuclide Be9 --mt 16 --incident-table 12
---outgoing-point 10`` or ``--nuclide C12 --mt 5``. These plot explicit native
-conditional points, not marginals. Plots label the product frame, integrate
-histograms and linear PDFs using their native laws, and transform to theta with
-``p_theta(theta) = p_mu(cos(theta))*sin(theta)``. The theta axis is shown in
-degrees while its density is explicitly per radian.
+Run ``python -m examples.runtime_nuclear_data.runtime_angular_distribution``
+from the repository root for Fe56 elastic sampling validation. Use ``--mt 51``
+for the first excited-state inelastic reaction, or ``--inventory`` to inspect
+representative native laws. Joint laws require explicit conditional points,
+for example ``--nuclide Be9 --mt 16 --incident-table 12 --outgoing-point 10``.
+These diagnostics inspect native normalization and sampling without plotting.
 
 
 Runtime sensitivity perturbations
@@ -424,12 +421,15 @@ and KalbachMann remain read-only; independent PDF changes would not preserve
 their native joint structure. In particular, conditional angular tables and
 Kalbach r/a parameters require separate joint-law adapters.
 
-``examples/fusion_li6_runtime_uq.py`` demonstrates all three changes in one
-loaded library session and generates plots, a controlled comparison CSV,
-a small Latin-hypercube training CSV, metadata JSON and a repeated-run report.
-All angular/energy data come through runtime APIs. No evaluated nuclear-data
-files are rewritten or reprocessed. The coefficients describe controlled
-sensitivity experiments, not an evaluated covariance uncertainty model.
+Run ``python -m examples.runtime_nuclear_data.steel_runtime`` to demonstrate
+Fe56 elastic cross-section and angular changes in a simplified Fe-Cr-Ni steel
+sphere. The example uses single-isotope element approximations, runs native
+transport, prints tally means and standard errors, and verifies exact baseline
+restoration. It does not generate analysis plots, training data or surrogates.
+Fe56 neutron emission laws in the NNDC library do not support independent
+energy-spectrum mutation; the example leaves those laws unchanged. Separate
+native photon sampler tests and a U235 fission-spectrum transport regression
+cover energy-spectrum editing. No evaluated nuclear-data files are rewritten.
 
 For matched repeatability, finish one run, call ``hard_reset()``, set the desired
 seed and enter the next context. ``run()`` finalizes simulation state but retains

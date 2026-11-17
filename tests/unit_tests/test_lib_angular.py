@@ -8,7 +8,7 @@ from scipy.integrate import quad
 import openmc
 import openmc.lib
 from openmc import exceptions
-from sandbox.examples.runtime_angular_distribution import (
+from examples.runtime_nuclear_data.runtime_angular_distribution import (
     angular_mass, incident_weights, kalbach_pdf, table_mass, validate_samples)
 from tests.unit_tests.test_lib_secondary import NUCLIDES, native_data
 
@@ -44,29 +44,29 @@ def test_angular_normalization(native_data, nuclide):
                         assert integral == pytest.approx(1)
 
 
-@pytest.mark.parametrize('mt', [2, 24])
+@pytest.mark.parametrize('mt', [2, 51])
 def test_native_angular_sampler(native_data, mt):
-    angle = openmc.lib.get_angular_distribution('Li6', mt)
+    angle = openmc.lib.get_angular_distribution('Fe56', mt)
     assert angle['type'] == 'tabular-angle'
-    _, _, probability = validate_samples('Li6', mt, 14.1e6, angle)
+    _, _, probability = validate_samples('Fe56', mt, 14.1e6, angle)
     assert probability > 1.e-5
     # Between incident points, test the stochastic mixture rather than choosing
     # the nearest grid point. Check reproducibility without modifying RNG streams.
-    first = openmc.lib.sample_angular_distribution('Li6', mt, 14.1e6, 100, seed=88)
-    second = openmc.lib.sample_angular_distribution('Li6', mt, 14.1e6, 100, seed=88)
+    first = openmc.lib.sample_angular_distribution('Fe56', mt, 14.1e6, 100, seed=88)
+    second = openmc.lib.sample_angular_distribution('Fe56', mt, 14.1e6, 100, seed=88)
     np.testing.assert_array_equal(first, second)
     assert angular_mass(angle, 14.1e6) == pytest.approx(1, abs=1.e-6)
 
 
 def test_angular_copy(native_data):
-    angle = openmc.lib.get_angular_distribution('Li6', 2)
+    angle = openmc.lib.get_angular_distribution('Fe56', 2)
     saved = deepcopy(angle)
     angle['incident_energy'][:] = 0
     for table in angle['tables']:
         for key in ('x', 'pdf', 'cdf'):
             table[key][:] = -123
         table['interpolation'] = -1
-    reread = openmc.lib.get_emission_distribution('Li6', 2)['angle']
+    reread = openmc.lib.get_emission_distribution('Fe56', 2)['angle']
     np.testing.assert_array_equal(reread['incident_energy'], saved['incident_energy'])
     for actual, expected in zip(reread['tables'], saved['tables']):
         for key in ('x', 'pdf', 'cdf'):
@@ -95,7 +95,7 @@ def test_nbody_isotropic(native_data):
 @pytest.mark.parametrize('energy', [-1, np.nan, np.inf])
 def test_bad_energy(native_data, energy):
     with pytest.raises(exceptions.InvalidArgumentError):
-        openmc.lib.sample_angular_distribution('Li6', 2, energy, 10)
+        openmc.lib.sample_angular_distribution('Fe56', 2, energy, 10)
 
 
 @pytest.mark.parametrize('kwargs', [{'n_samples': -1}, {'n_samples': True},
@@ -104,7 +104,7 @@ def test_bad_sampling_arguments(native_data, kwargs):
     args = dict(n_samples=10)
     args.update(kwargs)
     with pytest.raises((ValueError, TypeError)):
-        openmc.lib.sample_angular_distribution('Li6', 2, 14.1e6, **args)
+        openmc.lib.sample_angular_distribution('Fe56', 2, 14.1e6, **args)
 
 
 def test_incident_interpolation_and_histogram_integral():
